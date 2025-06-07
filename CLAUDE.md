@@ -9,6 +9,7 @@ Sempre responda em pt br
 ```bash
 cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools 
 npm install && npm run build && claude mcp add BiancaTools node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js --env GITHUB_TOKEN=ghp_xyz
+
 ```
 
 ### Forma 2: Via caminho relativo
