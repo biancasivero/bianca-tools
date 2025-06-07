@@ -20,6 +20,9 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import dotenv from 'dotenv';
 
+// Import Claude tool
+import { handleClaudeExecute } from './tools/claude/index.js';
+
 // Import custom types and utilities
 import {
   ToolName,
@@ -636,7 +639,8 @@ const toolHandlers: Record<ToolName, (args: any) => Promise<any>> = {
   [ToolName.GIT_STATUS]: handleGitStatus,
   [ToolName.GIT_COMMIT]: handleGitCommit,
   [ToolName.GIT_PUSH]: handleGitPush,
-  [ToolName.GIT_PULL]: handleGitPull
+  [ToolName.GIT_PULL]: handleGitPull,
+  [ToolName.CLAUDE_EXECUTE]: handleClaudeExecute
 };
 
 // ==================== Server Setup ====================
@@ -916,6 +920,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             }
           }
         }
+      },
+      // Claude CLI Tool
+      {
+        name: ToolName.CLAUDE_EXECUTE,
+        description: `Claude Code Agent: Assistente versátil para operações de código, arquivos, Git e terminal via Claude CLI.
+
+• Operações de arquivo: Criar, ler, editar, mover, copiar, deletar, listar arquivos, analisar imagens
+• Código: Gerar, analisar, refatorar, corrigir
+• Git: Stage, commit, push, tag (qualquer workflow)
+• Terminal: Executar comandos CLI ou abrir URLs
+• Busca web e resumo de conteúdo
+• Workflows multi-etapas (bumps de versão, updates de changelog, etc.)
+• Integração GitHub (criar PRs, verificar CI)
+
+Use workFolder para execução contextual em diretórios específicos.`,
+        inputSchema: {
+          type: 'object',
+          properties: {
+            prompt: { 
+              type: 'string', 
+              description: 'O prompt em linguagem natural para o Claude executar' 
+            },
+            workFolder: { 
+              type: 'string', 
+              description: 'Obrigatório ao usar operações de arquivo. O diretório de trabalho para execução (caminho absoluto)' 
+            }
+          },
+          required: ['prompt']
+        }
       }
     ]
   };
@@ -976,7 +1009,7 @@ setInterval(async () => {
       await state.browser.close();
       state.browser = undefined;
       state.page = undefined;
-      console.error('Browser closed due to inactivity');
+      // console.error('Browser closed due to inactivity');
     } catch (error) {
       console.error('Error closing browser:', error);
     }
@@ -987,7 +1020,7 @@ setInterval(async () => {
  * Handle graceful shutdown
  */
 process.on('SIGINT', async () => {
-  console.error('Shutting down...');
+  // console.error('Shutting down...');
   
   if (state.browser) {
     await state.browser.close();
@@ -1002,8 +1035,9 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   
-  console.error(`${CONFIG.server.name} v${CONFIG.server.version} started`);
-  console.error(`Total requests processed: ${state.requestCount}`);
+  // Não logar nada no início para não interferir com o MCP
+  // console.error(`${CONFIG.server.name} v${CONFIG.server.version} started`);
+  // console.error(`Total requests processed: ${state.requestCount}`);
 }
 
 main().catch((error) => {

@@ -91,7 +91,7 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 - **Extensibilidade**: Adicionar novas categorias é simples
 - **Type safety**: Tipos e validações específicos por módulo
 
-## Ferramentas Disponíveis (15 total)
+## Ferramentas Disponíveis (16 total)
 
 ### 🌐 Puppeteer (5 ferramentas)
 1. **puppeteer_navigate** - Navega para URLs
@@ -108,11 +108,20 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 5. **github_push_files** - Envia arquivos via Git Tree API
 6. **github_commit** - Faz commit de arquivos (cria ou atualiza)
 
-### 📁 Git Local (4 ferramentas) 🆕
+### 📁 Git Local (4 ferramentas)
 1. **git_status** - Verifica status do repositório local
 2. **git_commit** - Faz commit de alterações locais
 3. **git_push** - Envia commits para repositório remoto
 4. **git_pull** - Baixa alterações do repositório remoto
+
+### 🤖 Claude CLI (1 ferramenta) 🆕
+1. **claude_execute** - Executa Claude Code com capacidades completas de:
+   - Operações de arquivo (criar, ler, editar, mover, copiar, deletar)
+   - Análise e geração de código
+   - Comandos Git e GitHub avançados
+   - Execução de comandos terminal
+   - Busca web e análise de conteúdo
+   - Workflows multi-etapas complexos
 
 ## Características Técnicas Avançadas
 
@@ -247,6 +256,46 @@ await git_push({
   branch: "hotfix", 
   upstream: true 
 });
+```
+
+### 6. Claude Code Agent - Tarefas Complexas 🆕
+```javascript
+// Análise de código e refatoração
+await claude_execute({
+  prompt: "Analise o arquivo app.js e refatore para melhorar performance",
+  workFolder: "/Users/phiz/projeto"
+});
+
+// Workflow completo de release
+await claude_execute({
+  prompt: `Por favor:
+    1. Atualize a versão no package.json para 2.0.0
+    2. Gere o CHANGELOG.md com as mudanças desde a v1.0.0
+    3. Faça commit com mensagem "chore: release v2.0.0"
+    4. Crie uma tag v2.0.0
+    5. Push para o repositório`,
+  workFolder: "/Users/phiz/meu-projeto"
+});
+
+// Análise de imagem e documentação
+await claude_execute({
+  prompt: "Analise o screenshot bug.png e crie uma issue detalhada no GitHub descrevendo o problema",
+  workFolder: "/Users/phiz/Desktop"
+});
+```
+
+### 7. Combinando Ferramentas - BiancaTools + Claude 🆕
+```javascript
+// Capturar screenshot, analisar com Claude e criar issue
+await puppeteer_navigate({ url: "https://app.com/dashboard" });
+await puppeteer_screenshot({ path: "/tmp/dashboard.png" });
+
+await claude_execute({
+  prompt: "Analise /tmp/dashboard.png e identifique problemas de UI/UX",
+  workFolder: "/tmp"
+});
+
+// Claude pode então criar a issue automaticamente via suas próprias ferramentas
 ```
 
 ## Instalação e Uso

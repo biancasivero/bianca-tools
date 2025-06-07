@@ -35,15 +35,23 @@ export {
   handleGitPull
 } from './git/index.js';
 
+// Claude CLI Tool
+export {
+  claudeTool,
+  handleClaudeExecute
+} from './claude/index.js';
+
 // Combinar todas as ferramentas
 import { puppeteerTools } from './puppeteer/index.js';
 import { githubTools } from './github/index.js';
 import { gitTools } from './git/index.js';
+import { claudeTool } from './claude/index.js';
 
 export const allTools = [
   ...puppeteerTools,
   ...githubTools,
-  ...gitTools
+  ...gitTools,
+  claudeTool
 ];
 
 // Mapa de handlers por nome da ferramenta
@@ -71,6 +79,8 @@ import {
   handleGitPull
 } from './git/index.js';
 
+import { handleClaudeExecute } from './claude/index.js';
+
 export const toolHandlers = {
   // Puppeteer
   'puppeteer_navigate': handleNavigate,
@@ -91,5 +101,8 @@ export const toolHandlers = {
   'git_status': handleGitStatus,
   'git_commit': handleGitCommit,
   'git_push': handleGitPush,
-  'git_pull': handleGitPull
+  'git_pull': handleGitPull,
+  
+  // Claude CLI
+  'claude_execute': handleClaudeExecute
 } as const;

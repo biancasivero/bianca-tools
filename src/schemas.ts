@@ -120,6 +120,12 @@ export const GitPullSchema = z.object({
   rebase: z.boolean().optional().default(false)
 });
 
+// Claude CLI Schema
+export const ClaudeExecuteSchema = z.object({
+  prompt: z.string().min(1, 'Prompt é obrigatório'),
+  workFolder: z.string().optional()
+});
+
 // ==================== Schema Map ====================
 
 import { ToolName } from './types.js';
@@ -139,7 +145,8 @@ export const ToolSchemas = {
   [ToolName.GIT_STATUS]: GitStatusSchema,
   [ToolName.GIT_COMMIT]: GitCommitSchema,
   [ToolName.GIT_PUSH]: GitPushSchema,
-  [ToolName.GIT_PULL]: GitPullSchema
+  [ToolName.GIT_PULL]: GitPullSchema,
+  [ToolName.CLAUDE_EXECUTE]: ClaudeExecuteSchema
 } as const;
 
 // ==================== Validation Helper ====================

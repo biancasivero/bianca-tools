@@ -27,7 +27,10 @@ export enum ToolName {
   GIT_STATUS = 'git_status',
   GIT_COMMIT = 'git_commit',
   GIT_PUSH = 'git_push',
-  GIT_PULL = 'git_pull'
+  GIT_PULL = 'git_pull',
+  
+  // Claude CLI Tool
+  CLAUDE_EXECUTE = 'claude_execute'
 }
 
 export enum IssueState {
@@ -175,6 +178,12 @@ export interface GitPushParams {
 export interface GitPullParams {
   branch?: string;
   rebase?: boolean;
+}
+
+// Claude CLI Tool Params
+export interface ClaudeExecuteParams {
+  prompt: string;
+  workFolder?: string;
 }
 
 // ==================== Response Types ====================
