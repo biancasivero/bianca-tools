@@ -663,6 +663,40 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['owner', 'repo', 'files', 'message']
         }
+      },
+      {
+        name: ToolName.GITHUB_COMMIT,
+        description: 'Commit files to a GitHub repository (create or update)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            owner: { type: 'string', description: 'Repository owner' },
+            repo: { type: 'string', description: 'Repository name' },
+            message: { type: 'string', description: 'Commit message' },
+            files: {
+              type: 'array',
+              description: 'Files to commit',
+              items: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string', description: 'File path' },
+                  content: { type: 'string', description: 'File content' }
+                },
+                required: ['path', 'content']
+              }
+            },
+            branch: { type: 'string', description: 'Branch name', default: 'main' },
+            author: {
+              type: 'object',
+              description: 'Commit author info',
+              properties: {
+                name: { type: 'string', description: 'Author name' },
+                email: { type: 'string', description: 'Author email' }
+              }
+            }
+          },
+          required: ['owner', 'repo', 'message', 'files']
+        }
       }
     ]
   };
