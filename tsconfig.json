@@ -40,6 +40,6 @@
     "build", 
     "**/*.test.ts", 
     "**/__tests__/**",
-    "src/tools/claude-code-mcp/**"
+    "src/tools/one-shot/**"
   ]
 }

@@ -21,7 +21,13 @@ export enum ToolName {
   GITHUB_CREATE_PR = 'github_create_pr',
   GITHUB_CREATE_REPO = 'github_create_repo',
   GITHUB_PUSH_FILES = 'github_push_files',
-  GITHUB_COMMIT = 'github_commit'
+  GITHUB_COMMIT = 'github_commit',
+  
+  // Git Local Tools
+  GIT_STATUS = 'git_status',
+  GIT_COMMIT = 'git_commit',
+  GIT_PUSH = 'git_push',
+  GIT_PULL = 'git_pull'
 }
 
 export enum IssueState {
@@ -147,6 +153,28 @@ export interface FileContent {
   path: string;
   content: string;
   encoding?: 'utf-8' | 'base64';
+}
+
+// Git Local Tools Params
+export interface GitStatusParams {
+  detailed?: boolean;
+}
+
+export interface GitCommitParams {
+  message: string;
+  addAll?: boolean;
+  files?: string[];
+}
+
+export interface GitPushParams {
+  branch?: string;
+  force?: boolean;
+  upstream?: boolean;
+}
+
+export interface GitPullParams {
+  branch?: string;
+  rebase?: boolean;
 }
 
 // ==================== Response Types ====================

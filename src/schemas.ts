@@ -98,6 +98,28 @@ export const CommitSchema = z.object({
   }).optional()
 });
 
+// Git Local Schemas
+export const GitStatusSchema = z.object({
+  detailed: z.boolean().optional().default(false)
+});
+
+export const GitCommitSchema = z.object({
+  message: z.string().min(1, 'Mensagem de commit é obrigatória'),
+  addAll: z.boolean().optional().default(true),
+  files: z.array(z.string()).optional()
+});
+
+export const GitPushSchema = z.object({
+  branch: z.string().optional(),
+  force: z.boolean().optional().default(false),
+  upstream: z.boolean().optional().default(false)
+});
+
+export const GitPullSchema = z.object({
+  branch: z.string().optional(),
+  rebase: z.boolean().optional().default(false)
+});
+
 // ==================== Schema Map ====================
 
 import { ToolName } from './types.js';
@@ -113,7 +135,11 @@ export const ToolSchemas = {
   [ToolName.GITHUB_CREATE_REPO]: CreateRepoSchema,
   [ToolName.GITHUB_PUSH_FILES]: PushFilesSchema,
   [ToolName.GITHUB_COMMIT]: CommitSchema,
-  [ToolName.PUPPETEER_GET_CONTENT]: z.object({})
+  [ToolName.PUPPETEER_GET_CONTENT]: z.object({}),
+  [ToolName.GIT_STATUS]: GitStatusSchema,
+  [ToolName.GIT_COMMIT]: GitCommitSchema,
+  [ToolName.GIT_PUSH]: GitPushSchema,
+  [ToolName.GIT_PULL]: GitPullSchema
 } as const;
 
 // ==================== Validation Helper ====================

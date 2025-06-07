@@ -91,7 +91,7 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 - **Extensibilidade**: Adicionar novas categorias é simples
 - **Type safety**: Tipos e validações específicos por módulo
 
-## Ferramentas Disponíveis (11 total)
+## Ferramentas Disponíveis (15 total)
 
 ### 🌐 Puppeteer (5 ferramentas)
 1. **puppeteer_navigate** - Navega para URLs
@@ -106,7 +106,13 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 3. **github_create_pr** - Cria pull requests
 4. **github_create_repo** - Cria novos repositórios
 5. **github_push_files** - Envia arquivos via Git Tree API
-6. **github_commit** - 🆕 Faz commit de arquivos (cria ou atualiza)
+6. **github_commit** - Faz commit de arquivos (cria ou atualiza)
+
+### 📁 Git Local (4 ferramentas) 🆕
+1. **git_status** - Verifica status do repositório local
+2. **git_commit** - Faz commit de alterações locais
+3. **git_push** - Envia commits para repositório remoto
+4. **git_pull** - Baixa alterações do repositório remoto
 
 ## Características Técnicas Avançadas
 
@@ -206,6 +212,41 @@ if (html.includes("error")) {
     title: `Alerta: Site com erro ${new Date().toISOString()}`
   });
 }
+```
+
+### 4. Workflow Git Completo 🆕
+```javascript
+// Verificar status
+const status = await git_status({ detailed: true });
+console.log(`${status.totalChanges} arquivos modificados`);
+
+// Fazer commit local
+await git_commit({
+  message: "feat: Adicionar novas funcionalidades",
+  addAll: true
+});
+
+// Enviar para repositório remoto
+await git_push({ branch: "main" });
+```
+
+### 5. Commit Seletivo 🆕
+```javascript
+// Verificar alterações
+await git_status();
+
+// Adicionar apenas arquivos específicos
+await git_commit({
+  message: "fix: Corrigir bug crítico",
+  addAll: false,
+  files: ["src/fix.js", "src/utils.js"]
+});
+
+// Push com upstream
+await git_push({ 
+  branch: "hotfix", 
+  upstream: true 
+});
 ```
 
 ## Instalação e Uso
