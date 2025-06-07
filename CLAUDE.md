@@ -8,8 +8,7 @@ Sempre responda em pt br
 ### Forma 1: Comando Direto (Recomendado)
 ```bash
 cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools 
-npm install && npm run build && claude mcp add BiancaTools node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js --env GITHUB_TOKEN=ghp_xyz
-
+npm install && npm run build && claude mcp add BiancaTools "node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js" --env GITHUB_TOKEN=ghp_xyz
 ```
 
 ### Forma 2: Via caminho relativo
@@ -20,10 +19,13 @@ npm install
 npm run build
 
 # Depois adicione usando o caminho relativo
-claude mcp add BiancaTools node $(pwd)/build/index.js --env GITHUB_TOKEN=ghp_xyz
+claude mcp add BiancaTools "node $(pwd)/build/index.js" --env GITHUB_TOKEN=ghp_xyz
 ```
 
-**⚠️ IMPORTANTE**: Estes comandos são para o **Claude Code CLI** (linha de comando), NÃO para o Claude Desktop App! 
+**⚠️ IMPORTANTE**: 
+- Estes comandos são para o **Claude Code CLI** (linha de comando), NÃO para o Claude Desktop App!
+- **SEMPRE execute os comandos na pasta correta** (`cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools`) antes de instalar ou fazer build
+- As aspas em volta do comando node são necessárias para o comando funcionar corretamente 
 
 ## Visão Geral
 
