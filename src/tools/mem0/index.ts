@@ -118,15 +118,11 @@ export async function handleSearchMemory(params: SearchMemoryParams) {
   try {
     const client = getMemoryClient();
     
-    // Buscar memórias usando SDK oficial
-    const filters = {
-      user_id: validated.user_id,
-      ...validated.filters
-    };
-    
+    // Buscar memórias usando SDK oficial  
     const result = await client.search(validated.query, {
-      filters: filters,
-      limit: validated.limit
+      user_id: validated.user_id,
+      limit: validated.limit,
+      ...validated.filters
     });
     
     return successResponse(
