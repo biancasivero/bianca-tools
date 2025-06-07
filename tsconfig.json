@@ -39,7 +39,6 @@
     "node_modules", 
     "build", 
     "**/*.test.ts", 
-    "**/__tests__/**",
-    "src/tools/one-shot/**"
+    "**/__tests__/**"
   ]
 }

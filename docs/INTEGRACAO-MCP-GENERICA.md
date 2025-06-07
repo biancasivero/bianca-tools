@@ -4,7 +4,7 @@ Este documento explica como integrar qualquer servidor MCP existente como uma fe
 
 ## 📋 Visão Geral
 
-O BiancaTools é projetado com arquitetura modular que facilita a integração de novos servidores MCP. A integração do `claude-execute` (one-shot) demonstra como isso pode ser feito de forma limpa e eficiente.
+O BiancaTools é projetado com arquitetura modular que facilita a integração de novos servidores MCP. A integração do `claude_execute` demonstra como isso pode ser feito de forma limpa e eficiente.
 
 ## 🎯 Por que Integrar?
 
@@ -170,21 +170,23 @@ Adicione a nova ferramenta ao `CLAUDE.md`:
    - Parâmetro 2: descrição
 ```
 
-## 🔍 Exemplo Real: Integração do Claude One-Shot
+## 🔍 Exemplo Real: Integração do Claude CLI
 
 A integração do `claude_execute` demonstra o processo completo:
 
 ### Análise Original
-- **Ferramenta**: `claude_code` 
-- **Função**: Executar Claude CLI com prompts
+- **Ferramenta**: `claude_execute` 
+- **Função**: Executar Claude Code CLI com prompts
 - **Parâmetros**: `prompt` (obrigatório), `workFolder` (opcional)
 - **Timeout**: 30 minutos configurável
+- **Localização**: `src/tools/claude/`
 
 ### Adaptações Realizadas
 1. **Separação de responsabilidades**: Lógica movida para módulo independente
 2. **Padronização de erros**: MCPError ao invés de McpError
 3. **Validação**: Schema Zod integrado
 4. **Debug**: Sistema unificado com `MCP_CLAUDE_DEBUG`
+5. **Remoção de duplicação**: Servidor one-shot original removido
 
 ## ⚙️ Considerações Técnicas
 
@@ -218,7 +220,7 @@ npm run build
 ### 2. Reinstalar no Claude Code
 ```bash
 cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools
-npm install && npm run build && claude mcp add BiancaTools "node $(pwd)/build/index.js"
+npm install && npm run build && claude mcp add BiancaTools "node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js" --env GITHUB_TOKEN=ghp_xyz
 ```
 
 ### 3. Testar Ferramenta
@@ -243,6 +245,7 @@ await seu_tool_name({
 - **Automação**: puppeteer, playwright
 - **Dados**: sqlite, postgres, redis
 - **Utilidades**: weather, time, calculator
+- **AI/LLM**: claude-cli, openai, anthropic
 
 ## 🎯 Checklist de Integração
 
@@ -262,5 +265,26 @@ await seu_tool_name({
 3. **Documente bem**: Facilite o uso futuro
 4. **Teste extensivamente**: Cubra casos de erro
 5. **Contribua de volta**: Compartilhe integrações úteis
+
+## 🏗️ Estrutura Atual do BiancaTools
+
+```
+src/
+├── index.ts          # Servidor MCP principal
+├── types.ts          # Tipos e interfaces TypeScript
+├── schemas.ts        # Validação Zod
+├── utils.ts          # Utilitários compartilhados
+├── middleware.ts     # Sistema de middlewares
+├── factory.ts        # Factory pattern para ferramentas
+├── handlers.ts       # Handlers centralizados
+└── tools/            # Ferramentas organizadas por categoria
+    ├── index.ts      # Exporta todas as ferramentas
+    ├── puppeteer/    # 5 ferramentas de automação web
+    ├── github/       # 6 ferramentas GitHub API
+    ├── git/          # 4 ferramentas Git local
+    └── claude/       # 1 ferramenta Claude CLI
+```
+
+### Total: 16 ferramentas integradas e funcionando!
 
 Com este guia, você pode integrar qualquer servidor MCP ao BiancaTools, criando um hub centralizado e poderoso de ferramentas para o Claude Code!
