@@ -8,48 +8,16 @@
 
 ---
 
-## 🚀 Formas de Instalação
-
-### Método 1: Usando arquivo mcp.json (RECOMENDADO)
-
-#### 1. Localize o arquivo mcp.json
-```bash
-cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools
-```
-
-#### 2. Verifique o conteúdo
-```json
-{
-  "name": "BiancaTools",
-  "description": "BiancaTools - Diverse MCP tools for web automation, GitHub, and more",
-  "command": "node",
-  "args": ["/Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js"],
-  "env": {
-    "GITHUB_TOKEN": ""
-  }
-}
-```
-
-#### 3. Adicione ao Claude usando o arquivo
-```bash
-claude mcp add /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/mcp.json
-```
-
-### Método 2: Comando direto com nome customizado
-
-```bash
-claude mcp add BiancaTools -- node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js
-```
 
 ### 📊 Comparação dos Métodos
 
-| Aspecto | Método 1 (mcp.json) | Método 2 (Comando direto) |
-|---------|---------------------|---------------------------|
-| **Facilidade** | ⭐⭐⭐⭐⭐ Muito fácil | ⭐⭐⭐ Médio |
-| **Configuração** | Centralizada no arquivo | Manual via parâmetros |
-| **Manutenção** | Fácil de atualizar | Precisa reexecutar comando |
-| **Variáveis de ambiente** | Suportado nativamente | Requer configuração extra |
-| **Recomendado para** | Todos os usuários | Usuários avançados |
+| Aspecto | Método 1 (Comando direto) | Método 2 (Variável ambiente) |
+|---------|---------------------------|-----------------------------|
+| **Facilidade** | ⭐⭐⭐⭐ Fácil | ⭐⭐⭐ Médio |
+| **Configuração** | Tudo em um comando | Requer 2 passos |
+| **Manutenção** | Precisa reexecutar comando | Variável persiste na sessão |
+| **Segurança** | Token visível no comando | Token em variável separada |
+| **Recomendado para** | Uso rápido | Desenvolvimento contínuo |
 
 ### ✅ Verificando a instalação
 
@@ -87,13 +55,9 @@ npm start
 echo "GITHUB_TOKEN=ghp_seuTokenAqui" > .env
 ```
 
-#### Opção C: No arquivo mcp.json
-```json
-{
-  "env": {
-    "GITHUB_TOKEN": "ghp_seuTokenAqui"
-  }
-}
+#### Opção C: Direto no comando Claude
+```bash
+claude mcp add BiancaTools --env GITHUB_TOKEN=ghp_seuTokenAqui node /path/to/build/index.js
 ```
 
 ### ⚠️ Segurança

@@ -32,7 +32,8 @@ import {
   ListIssuesParams,
   CreatePRParams,
   CreateRepoParams,
-  PushFilesParams
+  PushFilesParams,
+  CommitParams
 } from './types.js';
 
 import { validateToolInput } from './schemas.js';
@@ -419,6 +420,70 @@ async function handlePushFiles(params: PushFilesParams) {
   );
 }
 
+async function handleCommit(params: CommitParams) {
+  const validated = await validateToolInput(ToolName.GITHUB_COMMIT, params);
+  const { owner, repo, message, files, branch = 'main', author } = validated;
+  
+  if (!state.octokit) {
+    throw new MCPError(ErrorCode.GITHUB_NOT_INITIALIZED, 'GitHub not initialized');
+  }
+  
+  const github = state.octokit;
+  
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const content = Buffer.from(file.content).toString('base64');
+      
+      try {
+        // Check if file exists
+        const { data: existingFile } = await github.repos.getContent({
+          owner,
+          repo,
+          path: file.path,
+          ref: branch
+        });
+        
+        // Update existing file
+        const { data } = await github.repos.createOrUpdateFileContents({
+          owner,
+          repo,
+          path: file.path,
+          message,
+          content,
+          sha: Array.isArray(existingFile) ? undefined : existingFile.sha,
+          branch,
+          committer: author,
+          author
+        });
+        
+        return { path: file.path, action: 'updated', sha: data.content?.sha };
+      } catch (error: any) {
+        if (error.status === 404) {
+          // Create new file
+          const { data } = await github.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: file.path,
+            message,
+            content,
+            branch,
+            committer: author,
+            author
+          });
+          
+          return { path: file.path, action: 'created', sha: data.content?.sha };
+        }
+        throw error;
+      }
+    })
+  );
+  
+  return successResponse(
+    { files: results, message, branch },
+    `Committed ${results.length} files to ${owner}/${repo}@${branch}`
+  );
+}
+
 // ==================== Tool Registry ====================
 
 const toolHandlers: Record<ToolName, (args: any) => Promise<any>> = {
@@ -431,7 +496,8 @@ const toolHandlers: Record<ToolName, (args: any) => Promise<any>> = {
   [ToolName.GITHUB_LIST_ISSUES]: handleListIssues,
   [ToolName.GITHUB_CREATE_PR]: handleCreatePR,
   [ToolName.GITHUB_CREATE_REPO]: handleCreateRepo,
-  [ToolName.GITHUB_PUSH_FILES]: handlePushFiles
+  [ToolName.GITHUB_PUSH_FILES]: handlePushFiles,
+  [ToolName.GITHUB_COMMIT]: handleCommit
 };
 
 // ==================== Server Setup ====================

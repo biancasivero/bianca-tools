@@ -1,4 +1,28 @@
+
+Sempre responda em pt br
+
 # BiancaTools - Servidor MCP Avançado com TypeScript
+
+## 🚀 Instalação no Claude Code CLI (Terminal)
+
+### Forma 1: Comando Direto (Recomendado)
+```bash
+cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools 
+npm install && npm run build && claude mcp add BiancaTools node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js --env GITHUB_TOKEN=ghp_xyz
+```
+
+### Forma 2: Via caminho relativo
+```bash
+# Primeiro, instale o servidor localmente
+cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools
+npm install
+npm run build
+
+# Depois adicione usando o caminho relativo
+claude mcp add BiancaTools node $(pwd)/build/index.js --env GITHUB_TOKEN=ghp_xyz
+```
+
+**⚠️ IMPORTANTE**: Estes comandos são para o **Claude Code CLI** (linha de comando), NÃO para o Claude Desktop App! 
 
 ## Visão Geral
 
@@ -20,23 +44,51 @@ BiancaTools é um servidor MCP (Model Context Protocol) de alta performance que 
 mcp-run-ts-tools/
 ├── src/
 │   ├── index.ts          # Servidor principal BiancaTools
+│   ├── index-refactored.ts # Versão refatorada com módulos organizados
 │   ├── types.ts          # Tipos, interfaces e enums TypeScript
 │   ├── schemas.ts        # Validação Zod para todas as ferramentas
 │   ├── utils.ts          # Funções utilitárias com generics
 │   ├── middleware.ts     # Sistema de middlewares tipados
 │   ├── factory.ts        # Factory pattern para ferramentas
 │   ├── handlers.ts       # Handlers extraídos e modulares
+│   ├── tools/            # 🆕 Ferramentas organizadas por categoria
+│   │   ├── index.ts      # Exporta todas as ferramentas
+│   │   ├── puppeteer/    # 🌐 Ferramentas de automação web
+│   │   │   └── index.ts  # Navigate, Screenshot, Click, Type, GetContent
+│   │   └── github/       # 🐙 Ferramentas GitHub
+│   │       └── index.ts  # CreateIssue, ListIssues, CreatePR, CreateRepo, PushFiles
 │   └── __tests__/
 │       └── utils.test.ts # Testes unitários com Jest
 ├── build/                # JavaScript compilado
-├── mcp.json             # Configuração para Claude Desktop
 ├── jest.config.js       # Configuração de testes
 ├── tsconfig.json        # TypeScript com strict mode
 ├── .env                 # Variáveis de ambiente (não commitado)
 └── package.json         # Scripts npm e dependências
 ```
 
-## Ferramentas Disponíveis (10 total)
+### 🆕 Nova Organização Modular
+
+As ferramentas agora estão organizadas por categoria em `/src/tools/`:
+
+#### 🌐 Puppeteer (`/src/tools/puppeteer/`)
+- Módulo independente para automação web
+- Browser singleton com cleanup automático
+- Validação Zod específica para cada ferramenta
+- Handlers isolados e testáveis
+
+#### 🐙 GitHub (`/src/tools/github/`)
+- Módulo independente para integração GitHub
+- Cliente Octokit configurado com token
+- Validação robusta de parâmetros
+- Suporte completo à API v3
+
+#### 🔧 Estrutura Modular
+- **Separação de responsabilidades**: Cada categoria tem seu próprio módulo
+- **Facilita manutenção**: Mudanças em uma categoria não afetam outras
+- **Extensibilidade**: Adicionar novas categorias é simples
+- **Type safety**: Tipos e validações específicos por módulo
+
+## Ferramentas Disponíveis (11 total)
 
 ### 🌐 Puppeteer (5 ferramentas)
 1. **puppeteer_navigate** - Navega para URLs
@@ -45,12 +97,13 @@ mcp-run-ts-tools/
 4. **puppeteer_type** - Digita texto em campos
 5. **puppeteer_get_content** - Extrai HTML da página
 
-### 🐙 GitHub (5 ferramentas)
+### 🐙 GitHub (6 ferramentas)
 1. **github_create_issue** - Cria issues em repositórios
 2. **github_list_issues** - Lista issues (open/closed/all)
 3. **github_create_pr** - Cria pull requests
 4. **github_create_repo** - Cria novos repositórios
 5. **github_push_files** - Envia arquivos via Git Tree API
+6. **github_commit** - 🆕 Faz commit de arquivos (cria ou atualiza)
 
 ## Características Técnicas Avançadas
 
@@ -162,15 +215,10 @@ cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools
 # Instalar dependências
 npm install
 
-# Configurar variáveis de ambiente
-echo "GITHUB_TOKEN=seu_token_aqui" > .env
-
 # Compilar TypeScript
 npm run build
 
-# Adicionar ao Claude Desktop
-claude mcp add BiancaTools -- node /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js
-```
+
 
 ### Scripts NPM Disponíveis
 - `npm run build` - Compila TypeScript com strict mode
@@ -302,4 +350,5 @@ middlewareManager.use(myMiddleware);
 - Mantenha type coverage em 100%
 - Documente novas ferramentas com JSDoc
 
-Para uso em produção, sempre use variáveis de ambiente seguras e configure rate limiting apropriado.
+### Type Safety
+- ✅ 100% do código tipado

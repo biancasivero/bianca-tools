@@ -35,5 +35,11 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "**/*.test.ts", "**/__tests__/**"]
+  "exclude": [
+    "node_modules", 
+    "build", 
+    "**/*.test.ts", 
+    "**/__tests__/**",
+    "src/tools/claude-code-mcp/**"
+  ]
 }

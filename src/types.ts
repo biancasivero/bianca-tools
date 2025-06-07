@@ -20,7 +20,8 @@ export enum ToolName {
   GITHUB_LIST_ISSUES = 'github_list_issues',
   GITHUB_CREATE_PR = 'github_create_pr',
   GITHUB_CREATE_REPO = 'github_create_repo',
-  GITHUB_PUSH_FILES = 'github_push_files'
+  GITHUB_PUSH_FILES = 'github_push_files',
+  GITHUB_COMMIT = 'github_commit'
 }
 
 export enum IssueState {
@@ -127,6 +128,21 @@ export interface PushFilesParams {
   message: string;
 }
 
+export interface CommitParams {
+  owner: string;
+  repo: string;
+  message: string;
+  files: {
+    path: string;
+    content: string;
+  }[];
+  branch?: string;
+  author?: {
+    name: string;
+    email: string;
+  };
+}
+
 export interface FileContent {
   path: string;
   content: string;
@@ -154,6 +170,9 @@ export enum ErrorCode {
   INVALID_PARAMS = 'INVALID_PARAMS',
   NOT_FOUND = 'NOT_FOUND',
   TIMEOUT = 'TIMEOUT',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
+  METHOD_NOT_FOUND = 'METHOD_NOT_FOUND',
   
   // Puppeteer errors
   BROWSER_NOT_INITIALIZED = 'BROWSER_NOT_INITIALIZED',

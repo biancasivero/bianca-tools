@@ -83,6 +83,21 @@ export const PushFilesSchema = z.object({
   message: z.string().min(1, 'Commit message é obrigatório')
 });
 
+export const CommitSchema = z.object({
+  owner: z.string().min(1, 'Owner é obrigatório'),
+  repo: z.string().min(1, 'Repo é obrigatório'),
+  message: z.string().min(1, 'Commit message é obrigatório'),
+  files: z.array(z.object({
+    path: z.string().min(1, 'Caminho do arquivo é obrigatório'),
+    content: z.string()
+  })).min(1, 'Pelo menos um arquivo é necessário'),
+  branch: z.string().optional().default('main'),
+  author: z.object({
+    name: z.string(),
+    email: z.string().email()
+  }).optional()
+});
+
 // ==================== Schema Map ====================
 
 import { ToolName } from './types.js';
@@ -97,6 +112,7 @@ export const ToolSchemas = {
   [ToolName.GITHUB_CREATE_PR]: CreatePRSchema,
   [ToolName.GITHUB_CREATE_REPO]: CreateRepoSchema,
   [ToolName.GITHUB_PUSH_FILES]: PushFilesSchema,
+  [ToolName.GITHUB_COMMIT]: CommitSchema,
   [ToolName.PUPPETEER_GET_CONTENT]: z.object({})
 } as const;
 

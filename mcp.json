@@ -1,9 +1,0 @@
-{
-  "name": "BiancaTools",
-  "description": "BiancaTools - Diverse MCP tools for web automation, GitHub, and more",
-  "command": "node",
-  "args": ["/Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/build/index.js"],
-  "env": {
-    "GITHUB_TOKEN": ""
-  }
-}
