@@ -35,23 +35,27 @@ export {
   handleGitPull
 } from './git/index.js';
 
-// Claude CLI Tool
+// Mem0 Memory Tools
 export {
-  claudeTool,
-  handleClaudeExecute
-} from './claude/index.js';
+  mem0Tools,
+  handleAddMemory,
+  handleSearchMemory,
+  handleListMemories,
+  handleDeleteMemories
+} from './mem0/index.js';
+
 
 // Combinar todas as ferramentas
 import { puppeteerTools } from './puppeteer/index.js';
 import { githubTools } from './github/index.js';
 import { gitTools } from './git/index.js';
-import { claudeTool } from './claude/index.js';
+import { mem0Tools } from './mem0/index.js';
 
 export const allTools = [
   ...puppeteerTools,
   ...githubTools,
   ...gitTools,
-  claudeTool
+  ...mem0Tools
 ];
 
 // Mapa de handlers por nome da ferramenta
@@ -79,7 +83,13 @@ import {
   handleGitPull
 } from './git/index.js';
 
-import { handleClaudeExecute } from './claude/index.js';
+import {
+  handleAddMemory,
+  handleSearchMemory,
+  handleListMemories,
+  handleDeleteMemories
+} from './mem0/index.js';
+
 
 export const toolHandlers = {
   // Puppeteer
@@ -103,6 +113,9 @@ export const toolHandlers = {
   'git_push': handleGitPush,
   'git_pull': handleGitPull,
   
-  // Claude CLI
-  'claude_execute': handleClaudeExecute
+  // Mem0 Memory
+  'mem0_add_memory': handleAddMemory,
+  'mem0_search_memory': handleSearchMemory,
+  'mem0_list_memories': handleListMemories,
+  'mem0_delete_memories': handleDeleteMemories
 } as const;

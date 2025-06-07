@@ -14,14 +14,14 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import puppeteer, { Browser, Page } from 'puppeteer';
-import { Octokit } from '@octokit/rest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import dotenv from 'dotenv';
 
-// Import Claude tool
-import { handleClaudeExecute } from './tools/claude/index.js';
+// Lazy loading de dependências pesadas
+let puppeteer: any;
+let Octokit: any;
+
 
 // Import custom types and utilities
 import {
@@ -53,6 +53,14 @@ import {
   errorResponse,
   SimpleCache 
 } from './utils.js';
+
+// Import Mem0 handlers
+import {
+  handleAddMemory,
+  handleSearchMemory,
+  handleListMemories,
+  handleDeleteMemories
+} from './tools/mem0/index.js';
 
 // Load environment variables
 dotenv.config();
@@ -102,27 +110,33 @@ const cache = new SimpleCache<any>(CONFIG.cache.ttl);
  * @returns Browser and page instances
  * @throws {MCPError} If browser initialization fails
  */
-async function ensureBrowser(): Promise<{ browser: Browser; page: Page }> {
+async function ensureBrowser(): Promise<{ browser: any; page: any }> {
   try {
-    if (!state.browser || !state.browser.isConnected()) {
+    // Lazy load puppeteer apenas quando necessário
+    if (!puppeteer) {
+      const puppeteerModule = await import('puppeteer');
+      puppeteer = puppeteerModule.default;
+    }
+    
+    if (!state.browser || !(state.browser as any).isConnected()) {
       state.browser = await puppeteer.launch({
         headless: CONFIG.puppeteer.headless,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
-      state.page = await state.browser.newPage();
+      state.page = await (state.browser as any).newPage();
       
       // Set viewport
-      await state.page.setViewport({
+      await (state.page as any).setViewport({
         width: CONFIG.puppeteer.viewportWidth,
         height: CONFIG.puppeteer.viewportHeight
       });
       
       // Set default timeout
-      state.page.setDefaultTimeout(CONFIG.puppeteer.defaultTimeout);
+      (state.page as any).setDefaultTimeout(CONFIG.puppeteer.defaultTimeout);
     }
     
-    if (!state.page || state.page.isClosed()) {
-      state.page = await state.browser.newPage();
+    if (!state.page || (state.page as any).isClosed()) {
+      state.page = await (state.browser as any).newPage();
     }
     
     state.lastActivity = Date.now();
@@ -141,7 +155,7 @@ async function ensureBrowser(): Promise<{ browser: Browser; page: Page }> {
  * @returns Octokit instance
  * @throws {MCPError} If GitHub token is missing or invalid
  */
-function ensureGitHub(): Octokit {
+async function ensureGitHub(): Promise<any> {
   if (!state.octokit) {
     const token = process.env.GITHUB_TOKEN;
     
@@ -150,6 +164,12 @@ function ensureGitHub(): Octokit {
         ErrorCode.GITHUB_NOT_INITIALIZED,
         'GitHub token not found. Please set GITHUB_TOKEN environment variable.'
       );
+    }
+    
+    // Lazy load Octokit apenas quando necessário
+    if (!Octokit) {
+      const octokitModule = await import('@octokit/rest');
+      Octokit = octokitModule.Octokit;
     }
     
     state.octokit = new Octokit({
@@ -262,7 +282,7 @@ async function handleGetContent() {
  * @returns Success response with created issue data
  */
 async function handleCreateIssue(params: CreateIssueParams) {
-  const github = ensureGitHub();
+  const github = await ensureGitHub();
   
   const response = await withRetry(
     async () => github.issues.create({
@@ -285,7 +305,7 @@ async function handleCreateIssue(params: CreateIssueParams) {
  * @returns Success response with issues array
  */
 async function handleListIssues(params: ListIssuesParams) {
-  const github = ensureGitHub();
+  const github = await ensureGitHub();
   
   // Use cache for repeated requests
   const cacheKey = `issues:${params.owner}/${params.repo}:${params.state}`;
@@ -315,7 +335,7 @@ async function handleListIssues(params: ListIssuesParams) {
  * @returns Success response with created PR data
  */
 async function handleCreatePR(params: CreatePRParams) {
-  const github = ensureGitHub();
+  const github = await ensureGitHub();
   
   const response = await withRetry(
     async () => github.pulls.create({
@@ -339,7 +359,7 @@ async function handleCreatePR(params: CreatePRParams) {
  * @returns Success response with created repo data
  */
 async function handleCreateRepo(params: CreateRepoParams) {
-  const github = ensureGitHub();
+  const github = await ensureGitHub();
   
   const response = await github.repos.createForAuthenticatedUser({
     name: params.name,
@@ -359,7 +379,7 @@ async function handleCreateRepo(params: CreateRepoParams) {
  * @returns Success response with commit details
  */
 async function handlePushFiles(params: PushFilesParams) {
-  const github = ensureGitHub();
+  const github = await ensureGitHub();
   const { owner, repo, branch = 'main', files, message } = params;
   
   // Get the latest commit SHA
@@ -640,7 +660,10 @@ const toolHandlers: Record<ToolName, (args: any) => Promise<any>> = {
   [ToolName.GIT_COMMIT]: handleGitCommit,
   [ToolName.GIT_PUSH]: handleGitPush,
   [ToolName.GIT_PULL]: handleGitPull,
-  [ToolName.CLAUDE_EXECUTE]: handleClaudeExecute
+  [ToolName.MEM0_ADD_MEMORY]: handleAddMemory,
+  [ToolName.MEM0_SEARCH_MEMORY]: handleSearchMemory,
+  [ToolName.MEM0_LIST_MEMORIES]: handleListMemories,
+  [ToolName.MEM0_DELETE_MEMORIES]: handleDeleteMemories
 };
 
 // ==================== Server Setup ====================
@@ -921,33 +944,104 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           }
         }
       },
-      // Claude CLI Tool
+      // Mem0 Memory tools
       {
-        name: ToolName.CLAUDE_EXECUTE,
-        description: `Claude Code Agent: Assistente versátil para operações de código, arquivos, Git e terminal via Claude CLI.
-
-• Operações de arquivo: Criar, ler, editar, mover, copiar, deletar, listar arquivos, analisar imagens
-• Código: Gerar, analisar, refatorar, corrigir
-• Git: Stage, commit, push, tag (qualquer workflow)
-• Terminal: Executar comandos CLI ou abrir URLs
-• Busca web e resumo de conteúdo
-• Workflows multi-etapas (bumps de versão, updates de changelog, etc.)
-• Integração GitHub (criar PRs, verificar CI)
-
-Use workFolder para execução contextual em diretórios específicos.`,
+        name: ToolName.MEM0_ADD_MEMORY,
+        description: 'Adiciona uma nova memória ao sistema de memória persistente local',
         inputSchema: {
           type: 'object',
           properties: {
-            prompt: { 
-              type: 'string', 
-              description: 'O prompt em linguagem natural para o Claude executar' 
+            content: {
+              type: 'string',
+              description: 'Conteúdo da memória a ser armazenada'
             },
-            workFolder: { 
-              type: 'string', 
-              description: 'Obrigatório ao usar operações de arquivo. O diretório de trabalho para execução (caminho absoluto)' 
+            user_id: {
+              type: 'string',
+              description: 'ID do usuário'
+            },
+            metadata: {
+              type: 'object',
+              description: 'Metadados adicionais para a memória (opcional)'
+            },
+            tags: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Tags para categorizar a memória (opcional)'
+            },
+            category: {
+              type: 'string',
+              description: 'Categoria da memória (opcional)'
             }
           },
-          required: ['prompt']
+          required: ['content', 'user_id']
+        }
+      },
+      {
+        name: ToolName.MEM0_SEARCH_MEMORY,
+        description: 'Busca memórias usando pesquisa semântica',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: 'Consulta para buscar memórias relacionadas'
+            },
+            user_id: {
+              type: 'string',
+              description: 'ID do usuário'
+            },
+            limit: {
+              type: 'number',
+              description: 'Número máximo de resultados (máximo: 100, padrão: 10)',
+              minimum: 1,
+              maximum: 100,
+              default: 10
+            },
+            filters: {
+              type: 'object',
+              description: 'Filtros adicionais para a busca (opcional)'
+            }
+          },
+          required: ['query', 'user_id']
+        }
+      },
+      {
+        name: ToolName.MEM0_LIST_MEMORIES,
+        description: 'Lista todas as memórias armazenadas para um usuário',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            user_id: {
+              type: 'string',
+              description: 'ID do usuário'
+            },
+            limit: {
+              type: 'number',
+              description: 'Número máximo de memórias a listar (máximo: 100, padrão: 50)',
+              minimum: 1,
+              maximum: 100,
+              default: 50
+            }
+          },
+          required: ['user_id']
+        }
+      },
+      {
+        name: ToolName.MEM0_DELETE_MEMORIES,
+        description: 'Remove memórias do sistema',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            user_id: {
+              type: 'string',
+              description: 'ID do usuário'
+            },
+            memory_id: {
+              type: 'string',
+              description: 'ID específico da memória a deletar (se não fornecido, deleta todas do usuário)'
+            }
+          },
+          required: ['user_id']
         }
       }
     ]

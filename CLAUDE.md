@@ -1,5 +1,7 @@
 
 Sempre responda em pt br
+caso enfrente algum problema recorra a documentação oficial encontrada na web
+quando achar que definitivamente um processo antigo rodando ou um cache persistente pedir para o usuario tentar abrir outro chat no terminal.
 
 # BiancaTools - Servidor MCP Avançado com TypeScript
 
@@ -91,7 +93,7 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 - **Extensibilidade**: Adicionar novas categorias é simples
 - **Type safety**: Tipos e validações específicos por módulo
 
-## Ferramentas Disponíveis (16 total)
+## Ferramentas Disponíveis (20 total) ✨
 
 ### 🌐 Puppeteer (5 ferramentas)
 1. **puppeteer_navigate** - Navega para URLs
@@ -113,6 +115,12 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 2. **git_commit** - Faz commit de alterações locais
 3. **git_push** - Envia commits para repositório remoto
 4. **git_pull** - Baixa alterações do repositório remoto
+
+### 🧠 Mem0 Memory (4 ferramentas) 🆕
+1. **mem0_add_memory** - Adiciona memórias ao sistema persistente
+2. **mem0_search_memory** - Busca semântica em memórias armazenadas
+3. **mem0_list_memories** - Lista todas as memórias do usuário
+4. **mem0_delete_memories** - Remove memórias específicas ou todas
 
 ### 🤖 Claude CLI (1 ferramenta) 🆕
 1. **claude_execute** - Executa Claude Code com capacidades completas de:

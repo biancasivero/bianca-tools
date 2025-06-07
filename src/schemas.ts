@@ -120,11 +120,33 @@ export const GitPullSchema = z.object({
   rebase: z.boolean().optional().default(false)
 });
 
-// Claude CLI Schema
-export const ClaudeExecuteSchema = z.object({
-  prompt: z.string().min(1, 'Prompt é obrigatório'),
-  workFolder: z.string().optional()
+// ==================== Mem0 Memory Schemas ====================
+
+export const AddMemorySchema = z.object({
+  content: z.string().min(1, 'Conteúdo da memória é obrigatório'),
+  user_id: z.string().min(1, 'ID do usuário é obrigatório'),
+  metadata: z.record(z.any()).optional(),
+  tags: z.array(z.string()).optional(),
+  category: z.string().optional()
 });
+
+export const SearchMemorySchema = z.object({
+  query: z.string().min(1, 'Query de busca é obrigatória'),
+  user_id: z.string().min(1, 'ID do usuário é obrigatório'),
+  limit: z.number().int().positive().max(100).optional().default(10),
+  filters: z.record(z.any()).optional()
+});
+
+export const ListMemoriesSchema = z.object({
+  user_id: z.string().min(1, 'ID do usuário é obrigatório'),
+  limit: z.number().int().positive().max(100).optional().default(50)
+});
+
+export const DeleteMemoriesSchema = z.object({
+  user_id: z.string().min(1, 'ID do usuário é obrigatório'),
+  memory_id: z.string().optional()
+});
+
 
 // ==================== Schema Map ====================
 
@@ -146,7 +168,10 @@ export const ToolSchemas = {
   [ToolName.GIT_COMMIT]: GitCommitSchema,
   [ToolName.GIT_PUSH]: GitPushSchema,
   [ToolName.GIT_PULL]: GitPullSchema,
-  [ToolName.CLAUDE_EXECUTE]: ClaudeExecuteSchema
+  [ToolName.MEM0_ADD_MEMORY]: AddMemorySchema,
+  [ToolName.MEM0_SEARCH_MEMORY]: SearchMemorySchema,
+  [ToolName.MEM0_LIST_MEMORIES]: ListMemoriesSchema,
+  [ToolName.MEM0_DELETE_MEMORIES]: DeleteMemoriesSchema
 } as const;
 
 // ==================== Validation Helper ====================

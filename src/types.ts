@@ -29,8 +29,12 @@ export enum ToolName {
   GIT_PUSH = 'git_push',
   GIT_PULL = 'git_pull',
   
-  // Claude CLI Tool
-  CLAUDE_EXECUTE = 'claude_execute'
+  // Mem0 Memory Tools
+  MEM0_ADD_MEMORY = 'mem0_add_memory',
+  MEM0_SEARCH_MEMORY = 'mem0_search_memory',
+  MEM0_LIST_MEMORIES = 'mem0_list_memories',
+  MEM0_DELETE_MEMORIES = 'mem0_delete_memories',
+  
 }
 
 export enum IssueState {
@@ -180,11 +184,50 @@ export interface GitPullParams {
   rebase?: boolean;
 }
 
-// Claude CLI Tool Params
-export interface ClaudeExecuteParams {
-  prompt: string;
-  workFolder?: string;
+// Mem0 Memory Tool Parameters
+export interface AddMemoryParams {
+  content: string;
+  user_id: string;
+  metadata?: Record<string, any>;
+  tags?: string[];
+  category?: string;
 }
+
+export interface SearchMemoryParams {
+  query: string;
+  user_id: string;
+  limit?: number;
+  filters?: Record<string, any>;
+}
+
+export interface ListMemoriesParams {
+  user_id: string;
+  limit?: number;
+}
+
+export interface DeleteMemoriesParams {
+  user_id: string;
+  memory_id?: string;
+}
+
+export interface Memory {
+  id: string;
+  content: string;
+  user_id: string;
+  timestamp: string;
+  metadata?: Record<string, any>;
+  tags?: string[];
+  category?: string;
+  emotion?: string;
+}
+
+export interface MemorySearchResult {
+  memory: string;
+  score: number;
+  id: string;
+  metadata?: Record<string, any>;
+}
+
 
 // ==================== Response Types ====================
 
