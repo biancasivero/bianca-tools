@@ -1,11 +1,24 @@
 {
-  "name": "@mcp/bianca-tools",
+  "name": "bianca-tools-mcp",
   "version": "2.0.0",
-  "description": "BiancaTools",
+  "description": "BiancaTools - MCP server com ferramentas para automação web, GitHub e Claude integration",
   "type": "module",
   "main": "build/index.js",
   "bin": {
     "bianca-tools": "build/index.js"
+  },
+  "files": [
+    "build/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phiz/bianca-tools.git"
+  },
+  "author": "Phiz",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "tsc",

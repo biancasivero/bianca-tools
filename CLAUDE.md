@@ -298,6 +298,56 @@ await claude_execute({
 // Claude pode então criar a issue automaticamente via suas próprias ferramentas
 ```
 
+## 📋 Quando Usar `claude_execute` vs Ferramentas Específicas
+
+### ✅ USE `claude_execute` QUANDO:
+
+1. **Análise e Geração de Código Complexa**
+   - Refatoração de código existente
+   - Análise de performance ou segurança
+   - Geração de código baseada em padrões do projeto
+
+2. **Workflows Multi-etapas**
+   - Processos que envolvem 3+ operações sequenciais
+   - Tarefas que requerem decisões contextuais
+   - Releases completos (versão, changelog, tag, push)
+
+3. **Análise de Conteúdo Visual**
+   - Análise de screenshots ou imagens
+   - Identificação de problemas de UI/UX
+   - Documentação de bugs visuais
+
+4. **Operações de Arquivos Complexas**
+   - Reorganização de estrutura de diretórios
+   - Refatoração em massa de múltiplos arquivos
+   - Análise de dependências entre arquivos
+
+5. **Integração com Web**
+   - Busca e análise de informações online
+   - Criação de resumos de documentação externa
+   - Comparação com best practices atuais
+
+### ❌ NÃO USE `claude_execute` QUANDO:
+
+1. **Operações Simples e Diretas**
+   - Commits simples → Use `git_commit`
+   - Criar uma issue → Use `github_create_issue`
+   - Capturar screenshot → Use `puppeteer_screenshot`
+   - Push simples → Use `git_push`
+
+2. **Performance é Crítica**
+   - Ferramentas específicas são mais rápidas
+   - Operações em lote repetitivas
+   - Scripts automatizados de CI/CD
+
+3. **Operações Bem Definidas**
+   - Quando você sabe exatamente o que fazer
+   - Não há necessidade de análise ou decisão
+   - Operações atômicas independentes
+
+### 🎯 Regra Geral:
+**Use ferramentas específicas para operações diretas e `claude_execute` para tarefas que requerem "inteligência" - análise, decisões contextuais, ou coordenação complexa.**
+
 ## Instalação e Uso
 
 ### Setup Completo

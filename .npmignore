@@ -1,0 +1,41 @@
+# Arquivos de desenvolvimento
+src/
+*.ts
+!*.d.ts
+tsconfig.json
+jest.config.js
+.env
+.env.*
+
+# Testes
+**/__tests__/
+*.test.*
+*.spec.*
+
+# Logs e cache
+*.log
+npm-debug.log*
+.npm/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Docs desnecessários para runtime
+docs/
+*.md
+!README.md
+
+# Scripts locais
+bianca-tools.sh
+
+# Build temporários
+*.map
