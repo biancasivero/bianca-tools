@@ -1,12 +1,11 @@
 /**
  * Mem0 Memory Tools Module
  * 
- * Ferramentas para gerenciamento de memória persistente
- * Modo híbrido: tenta API real, fallback para simulação inteligente
+ * Ferramentas para gerenciamento de memória persistente usando SDK oficial
  * API Documentation: https://docs.mem0.ai/
  */
 
-import fetch from 'node-fetch';
+import { MemoryClient } from 'mem0ai';
 import { z } from 'zod';
 import { successResponse } from '../../utils.js';
 import {
@@ -19,8 +18,30 @@ import {
 } from '../../types.js';
 
 // Configuração
-const MEM0_API_KEY = process.env.MEM0_API_KEY || 'demo_key';
-const MEM0_BASE_URL = process.env.MEM0_BASE_URL || 'https://api.mem0.ai';
+const MEM0_API_KEY = process.env.MEM0_API_KEY || '';
+const MEM0_ORG_ID = process.env.MEM0_ORG_ID;
+const MEM0_PROJECT_ID = process.env.MEM0_PROJECT_ID;
+
+// Inicializar cliente Mem0
+let memoryClient: MemoryClient | null = null;
+
+function getMemoryClient(): MemoryClient {
+  if (!memoryClient) {
+    if (!MEM0_API_KEY) {
+      throw new Error('MEM0_API_KEY é obrigatório para usar as ferramentas de memória');
+    }
+    
+    const clientConfig: any = {
+      apiKey: MEM0_API_KEY
+    };
+    
+    if (MEM0_ORG_ID) clientConfig.orgId = MEM0_ORG_ID;
+    if (MEM0_PROJECT_ID) clientConfig.projectId = MEM0_PROJECT_ID;
+    
+    memoryClient = new MemoryClient(clientConfig);
+  }
+  return memoryClient;
+}
 
 // Schemas de validação
 export const AddMemorySchema = z.object({
@@ -48,49 +69,40 @@ export const DeleteMemoriesSchema = z.object({
   memory_id: z.string().optional()
 });
 
-// Função auxiliar para headers da API
-function getHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Token ${MEM0_API_KEY}`
-  };
-}
-
 // Handlers das ferramentas
 export async function handleAddMemory(params: AddMemoryParams) {
   const validated = AddMemorySchema.parse(params);
   
   try {
-    const response = await fetch(`${MEM0_BASE_URL}/v1/memories/`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: validated.content }],
-        user_id: validated.user_id,
-        metadata: validated.metadata || {},
-        categories: validated.category ? [validated.category] : undefined
-      })
+    const client = getMemoryClient();
+    
+    // Adicionar memória usando SDK oficial
+    const messages = [
+      { role: 'user' as const, content: validated.content }
+    ];
+    
+    const result = await client.add(messages, {
+      user_id: validated.user_id,
+      metadata: validated.metadata || {},
+      ...(validated.category && { categories: [validated.category] })
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-
-    const result = await response.json() as any;
+    
+    // O resultado é um array de objetos
+    const memoryData = Array.isArray(result) ? result[0] : result;
+    const memoryId = memoryData?.id || 'unknown';
     
     return successResponse(
       {
-        id: result.id || result.memory_id,
+        id: memoryId,
         content: validated.content,
         user_id: validated.user_id,
         metadata: validated.metadata || {},
         tags: validated.tags || [],
         category: validated.category,
-        created_at: result.created_at || new Date().toISOString(),
+        created_at: new Date().toISOString(),
         mode: 'api'
       },
-      `✅ Memória adicionada com sucesso (ID: ${result.id || result.memory_id}) - Modo: API Real`
+      `✅ Memória adicionada com sucesso (ID: ${memoryId}) - SDK Oficial`
     );
   } catch (error: any) {
     throw new MCPError(
@@ -104,33 +116,28 @@ export async function handleSearchMemory(params: SearchMemoryParams) {
   const validated = SearchMemorySchema.parse(params);
   
   try {
-    const response = await fetch(`${MEM0_BASE_URL}/v1/memories/search/`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        query: validated.query,
-        user_id: validated.user_id,
-        limit: validated.limit,
-        filters: validated.filters
-      })
+    const client = getMemoryClient();
+    
+    // Buscar memórias usando SDK oficial
+    const filters = {
+      user_id: validated.user_id,
+      ...validated.filters
+    };
+    
+    const result = await client.search(validated.query, {
+      filters: filters,
+      limit: validated.limit
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json() as any;
     
     return successResponse(
       {
-        results: data.results || [],
-        total: data.results?.length || 0,
+        results: result || [],
+        total: (result || []).length,
         query: validated.query,
         user_id: validated.user_id,
         mode: 'api'
       },
-      `Encontradas ${data.results?.length || 0} memórias para "${validated.query}" - Modo: API Real`
+      `Encontradas ${(result || []).length} memórias para "${validated.query}" - SDK Oficial`
     );
   } catch (error: any) {
     throw new MCPError(
@@ -144,30 +151,22 @@ export async function handleListMemories(params: ListMemoriesParams) {
   const validated = ListMemoriesSchema.parse(params);
   
   try {
-    const response = await fetch(`${MEM0_BASE_URL}/v1/memories/`, {
-      method: 'GET',
-      headers: getHeaders(),
-      body: JSON.stringify({
-        user_id: validated.user_id,
-        limit: validated.limit
-      })
+    const client = getMemoryClient();
+    
+    // Listar memórias usando SDK oficial
+    const result = await client.getAll({
+      user_id: validated.user_id,
+      limit: validated.limit
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json() as any;
     
     return successResponse(
       {
-        memories: data.results || data.memories || [],
-        total: data.results?.length || data.memories?.length || 0,
+        memories: result || [],
+        total: (result || []).length,
         user_id: validated.user_id,
         mode: 'api'
       },
-      `Total de ${data.results?.length || data.memories?.length || 0} memórias encontradas - Modo: API Real`
+      `Total de ${(result || []).length} memórias encontradas - SDK Oficial`
     );
   } catch (error: any) {
     throw new MCPError(
@@ -181,17 +180,12 @@ export async function handleDeleteMemories(params: DeleteMemoriesParams) {
   const validated = DeleteMemoriesSchema.parse(params);
   
   try {
+    const client = getMemoryClient();
+    
     if (validated.memory_id) {
-      const response = await fetch(`${MEM0_BASE_URL}/v1/memories/${validated.memory_id}/`, {
-        method: 'DELETE',
-        headers: getHeaders()
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
-
+      // Deletar memória específica
+      await client.delete(validated.memory_id);
+      
       return successResponse(
         {
           deleted: true,
@@ -200,31 +194,24 @@ export async function handleDeleteMemories(params: DeleteMemoriesParams) {
           deleted_count: 1,
           mode: 'api'
         },
-        `Memória ${validated.memory_id} deletada com sucesso - Modo: API Real`
+        `Memória ${validated.memory_id} deletada com sucesso - SDK Oficial`
       );
     } else {
-      // Para deletar todas as memórias do usuário
-      const listResponse = await fetch(`${MEM0_BASE_URL}/v1/memories/`, {
-        method: 'GET',
-        headers: getHeaders()
-      });
-
-      if (!listResponse.ok) {
-        throw new Error(`HTTP ${listResponse.status}`);
-      }
-
-      const memories = await listResponse.json() as any;
-      const userMemories = memories.results?.filter((m: any) => m.user_id === validated.user_id) || [];
-      
+      // Deletar todas as memórias do usuário
+      const memories = await client.getAll({ user_id: validated.user_id });
       let deletedCount = 0;
-      for (const memory of userMemories) {
-        const deleteResponse = await fetch(`${MEM0_BASE_URL}/v1/memories/${memory.id}/`, {
-          method: 'DELETE',
-          headers: getHeaders()
-        });
-        if (deleteResponse.ok) deletedCount++;
+      
+      if (memories && Array.isArray(memories)) {
+        for (const memory of memories) {
+          try {
+            await client.delete(memory.id);
+            deletedCount++;
+          } catch (error) {
+            console.warn(`Erro ao deletar memória ${memory.id}:`, error);
+          }
+        }
       }
-
+      
       return successResponse(
         {
           deleted: true,
@@ -232,7 +219,7 @@ export async function handleDeleteMemories(params: DeleteMemoriesParams) {
           deleted_count: deletedCount,
           mode: 'api'
         },
-        `${deletedCount} memórias do usuário ${validated.user_id} foram deletadas - Modo: API Real`
+        `${deletedCount} memórias do usuário ${validated.user_id} foram deletadas - SDK Oficial`
       );
     }
   } catch (error: any) {
@@ -247,7 +234,7 @@ export async function handleDeleteMemories(params: DeleteMemoriesParams) {
 export const mem0Tools = [
   {
     name: 'mem0_add_memory',
-    description: 'Adiciona uma nova memória ao sistema de memória persistente local',
+    description: 'Adiciona uma nova memória ao sistema de memória persistente usando SDK oficial',
     inputSchema: {
       type: 'object',
       properties: {
@@ -278,7 +265,7 @@ export const mem0Tools = [
   },
   {
     name: 'mem0_search_memory',
-    description: 'Busca memórias usando pesquisa semântica',
+    description: 'Busca memórias usando pesquisa semântica com SDK oficial',
     inputSchema: {
       type: 'object',
       properties: {
@@ -307,7 +294,7 @@ export const mem0Tools = [
   },
   {
     name: 'mem0_list_memories',
-    description: 'Lista todas as memórias armazenadas para um usuário',
+    description: 'Lista todas as memórias armazenadas para um usuário usando SDK oficial',
     inputSchema: {
       type: 'object',
       properties: {
@@ -328,7 +315,7 @@ export const mem0Tools = [
   },
   {
     name: 'mem0_delete_memories',
-    description: 'Remove memórias do sistema',
+    description: 'Remove memórias do sistema usando SDK oficial',
     inputSchema: {
       type: 'object',
       properties: {
