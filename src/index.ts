@@ -72,7 +72,7 @@ const execAsync = promisify(exec);
 
 const CONFIG = {
   puppeteer: {
-    headless: true,
+    headless: false,
     defaultTimeout: 30000,
     viewportWidth: 1280,
     viewportHeight: 800

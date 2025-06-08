@@ -12,6 +12,7 @@ export {
   handleClick,
   handleType,
   handleGetContent,
+  handleOpenBrowser,
   startBrowserCleanup
 } from './puppeteer/index.js';
 
@@ -44,18 +45,26 @@ export {
   handleDeleteMemories
 } from './mem0/index.js';
 
+// Browser Tools
+export {
+  browserTools,
+  handleOpenUrl
+} from './browser/index.js';
+
 
 // Combinar todas as ferramentas
 import { puppeteerTools } from './puppeteer/index.js';
 import { githubTools } from './github/index.js';
 import { gitTools } from './git/index.js';
 import { mem0Tools } from './mem0/index.js';
+import { browserTools } from './browser/index.js';
 
 export const allTools = [
   ...puppeteerTools,
   ...githubTools,
   ...gitTools,
-  ...mem0Tools
+  ...mem0Tools,
+  ...browserTools
 ];
 
 // Mapa de handlers por nome da ferramenta
@@ -64,7 +73,8 @@ import {
   handleScreenshot,
   handleClick,
   handleType,
-  handleGetContent
+  handleGetContent,
+  handleOpenBrowser
 } from './puppeteer/index.js';
 
 import {
@@ -90,6 +100,10 @@ import {
   handleDeleteMemories
 } from './mem0/index.js';
 
+import {
+  handleOpenUrl
+} from './browser/index.js';
+
 
 export const toolHandlers = {
   // Puppeteer
@@ -98,6 +112,7 @@ export const toolHandlers = {
   'puppeteer_click': handleClick,
   'puppeteer_type': handleType,
   'puppeteer_get_content': handleGetContent,
+  'open_browser': handleOpenBrowser,
   
   // GitHub
   'github_create_issue': handleCreateIssue,
@@ -117,5 +132,8 @@ export const toolHandlers = {
   'mem0_add_memory': handleAddMemory,
   'mem0_search_memory': handleSearchMemory,
   'mem0_list_memories': handleListMemories,
-  'mem0_delete_memories': handleDeleteMemories
+  'mem0_delete_memories': handleDeleteMemories,
+  
+  // Browser
+  'browser_open_url': handleOpenUrl
 } as const;

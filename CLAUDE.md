@@ -5,6 +5,22 @@ quando achar que definitivamente um processo antigo rodando ou um cache persiste
 
 # BiancaTools - Servidor MCP Avançado com TypeScript
 
+## 🔄 COMANDO COMPLETO PARA REINSTALAR APÓS MODIFICAÇÕES:
+```bash
+cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools && rm -rf build && rm -rf node_modules && npm install && npm run build && claude mcp remove BiancaTools -s user && claude mcp add BiancaTools /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/run.sh --env GITHUB_TOKEN=ghp_xyx --env MEM0_API_KEY=m0-xyz --env MEM0_BASE_URL=https://api.mem0.ai -s user
+
+```
+
+
+lembrando que o valor da variavel real está no .env
+
+### 🧹 Versão com Limpeza Completa (quando houver problemas):
+```bash
+cd /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools && rm -rf build && rm -rf node_modules && claude mcp remove BiancaTools -s user && npm install typescript && npm run build && claude mcp add BiancaTools /Users/phiz/Desktop/BIANCA-SANITY/mcp-run-ts-tools/run.sh --env GITHUB_TOKEN=ghp_xyz --env MEM0_API_KEY=m0-xyz --env MEM0_BASE_URL=https://api.mem0.ai -s user
+```
+
+consultar o .env para trocar pela real quando for usar
+
 ## 🚀 Instalação no Claude Code CLI (Terminal)
 
 ### Forma 1: Comando Direto (Recomendado)
@@ -93,7 +109,7 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 - **Extensibilidade**: Adicionar novas categorias é simples
 - **Type safety**: Tipos e validações específicos por módulo
 
-## Ferramentas Disponíveis (20 total) ✨
+## Ferramentas Disponíveis (21 total) ✨
 
 ### 🌐 Puppeteer (5 ferramentas)
 1. **puppeteer_navigate** - Navega para URLs
@@ -121,6 +137,9 @@ As ferramentas agora estão organizadas por categoria em `/src/tools/`:
 2. **mem0_search_memory** - Busca semântica em memórias armazenadas
 3. **mem0_list_memories** - Lista todas as memórias do usuário
 4. **mem0_delete_memories** - Remove memórias específicas ou todas
+
+### 🖥️ Browser (1 ferramenta) 🆕
+1. **browser_open_url** - Abre URLs no navegador padrão do sistema ou em navegadores específicos (Chrome, Safari, Firefox)
 
 ### 🤖 Claude CLI (1 ferramenta) 🆕
 1. **claude_execute** - Executa Claude Code com capacidades completas de:

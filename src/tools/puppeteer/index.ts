@@ -6,6 +6,8 @@
 
 import puppeteer, { Browser, Page } from 'puppeteer';
 import { z } from 'zod';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { 
   successResponse 
 } from '../../utils.js';
@@ -17,6 +19,8 @@ import {
   MCPError,
   ErrorCode
 } from '../../types.js';
+
+const execAsync = promisify(exec);
 
 // Schemas de validação
 export const NavigateSchema = z.object({
@@ -37,6 +41,10 @@ export const TypeSchema = z.object({
   text: z.string()
 });
 
+export const OpenBrowserSchema = z.object({
+  url: z.string().url('URL inválida fornecida')
+});
+
 // Estado do browser
 let browser: Browser | null = null;
 let page: Page | null = null;
@@ -44,6 +52,12 @@ let lastActivity = Date.now();
 
 // Configurações
 const BROWSER_TIMEOUT = 5 * 60 * 1000; // 5 minutos
+const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
+
+// Configurações do browser - simplificadas como no reference server
+const BROWSER_CONFIG = {
+  headless: false
+};
 
 /**
  * Garante que o browser está inicializado
@@ -51,16 +65,22 @@ const BROWSER_TIMEOUT = 5 * 60 * 1000; // 5 minutos
 async function ensureBrowser(): Promise<void> {
   if (!browser || !browser.isConnected()) {
     console.log('🚀 Iniciando novo browser Puppeteer...');
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    
+    // Usa configuração simples como no reference server
+    browser = await puppeteer.launch(BROWSER_CONFIG);
+    
+    // Adiciona listener para fechar gracefully
+    browser.on('disconnected', () => {
+      console.log('❌ Browser desconectado');
+      browser = null;
+      page = null;
     });
   }
   
   if (!page || page.isClosed()) {
     console.log('📄 Criando nova página...');
-    page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 720 });
+    const pages = await browser.pages();
+    page = pages[0] || await browser.newPage();
   }
   
   lastActivity = Date.now();
@@ -157,6 +177,47 @@ export async function handleGetContent() {
   );
 }
 
+// Nova função para abrir URL em nova aba
+export async function handleNewTab(params: NavigateParams) {
+  const validated = NavigateSchema.parse(params);
+  
+  await ensureBrowser();
+  if (!browser) throw new MCPError(ErrorCode.PAGE_LOAD_FAILED, 'Browser não inicializado');
+  
+  // Cria nova aba
+  const newPage = await browser.newPage();
+  await newPage.setViewport(DEFAULT_VIEWPORT);
+  await newPage.goto(validated.url, { waitUntil: 'networkidle2' });
+  
+  // Foca na nova aba
+  await newPage.bringToFront();
+  
+  return successResponse(
+    { url: validated.url },
+    `Nova aba aberta com ${validated.url}`
+  );
+}
+
+// Função para abrir URL no navegador padrão do sistema
+export async function handleOpenBrowser(params: { url: string }) {
+  const validated = OpenBrowserSchema.parse(params);
+  
+  try {
+    // Usa o comando 'open' do macOS para abrir a URL no navegador padrão
+    await execAsync(`open "${validated.url}"`);
+    
+    return successResponse(
+      { url: validated.url },
+      `URL ${validated.url} aberta no navegador padrão do sistema`
+    );
+  } catch (error) {
+    throw new MCPError(
+      ErrorCode.INTERNAL_ERROR,
+      `Falha ao abrir navegador: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+    );
+  }
+}
+
 // Metadados das ferramentas Puppeteer
 export const puppeteerTools = [
   {
@@ -211,6 +272,28 @@ export const puppeteerTools = [
     inputSchema: {
       type: 'object',
       properties: {}
+    }
+  },
+  {
+    name: 'puppeteer_new_tab',
+    description: 'Open URL in a new browser tab',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'URL to open in new tab' }
+      },
+      required: ['url']
+    }
+  },
+  {
+    name: 'open_browser',
+    description: 'Open URL in the system default browser',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'URL to open in default browser' }
+      },
+      required: ['url']
     }
   }
 ];

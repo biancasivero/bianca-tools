@@ -24,7 +24,7 @@ import { withRetry, withTimeout, successResponse, SimpleCache } from './utils.js
 
 const CONFIG = {
   puppeteer: {
-    headless: true,
+    headless: false,
     defaultTimeout: 30000,
     viewportWidth: 1280,
     viewportHeight: 800
